@@ -161,7 +161,7 @@
     document.addEventListener("keydown", (e) => {
       if (e.key.toLowerCase() === "c")  {
         mostrarMensagem("Seus pontos foram resetados");
-        Premio = 0
+        setCookie("pontuacao", 0, 0);
       }
     });
 
@@ -171,3 +171,4 @@
   </script>
 </body>
 </html>
+
