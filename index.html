@@ -158,6 +158,12 @@
         mostrarMensagem("Seus pontos: " + Premio);
       }
     });
+    document.addEventListener("keydown", (e) => {
+      if (e.key.toLowerCase() === "c")  {
+        mostrarMensagem("Seus pontos foram resetados");
+        Premio = 0
+      }
+    });
 
     // ====== Início ======
     carregarPontuacao();
