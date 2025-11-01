@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Horário de Brasília - Tela Cheia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    #relogio {
+      font-weight: 300;
+      letter-spacing: 2px;
+      font-size: 18vw;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    #mensagem {
+      position: fixed;
+      bottom: 30px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #00ff88;
+      padding: 10px 25px;
+      border-radius: 10px;
+      font-size: 18px;
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+
+    #textoEspecial {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #ffffff;
+      font-size: 10vw;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 1s;
+    }
+
+    @media (max-width: 500px) {
+      #relogio {
+        font-size: 20vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="relogio">00:00:00</div>
+  <div id="mensagem"></div>
+  <div id="textoEspecial"></div>
+
+  <script>
+    let Premio = 0;
+    let mensagemMostrada = false;
+
+    // ====== Funções de Cookie ======
+    function setCookie(nome, valor, dias) {
+      const d = new Date();
+      d.setTime(d.getTime() + (dias*24*60*60*1000));
+      const expires = "expires="+ d.toUTCString();
+      document.cookie = nome + "=" + valor + ";" + expires + ";path=/";
+    }
+
+    function getCookie(nome) {
+      const nomeEQ = nome + "=";
+      const ca = document.cookie.split(';');
+      for(let i=0; i<ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1);
+        if (c.indexOf(nomeEQ) == 0) return c.substring(nomeEQ.length, c.length);
+      }
+      return null;
+    }
+
+    // ====== Lógica de pontuação ======
+    function salvarPontuacao() {
+      const atual = parseInt(getCookie("pontuacao") || "0");
+      const novoValor = atual + 1; // sempre soma ao valor existente
+      setCookie("pontuacao", novoValor, 365);
+      Premio = novoValor;
+    }
+
+    function carregarPontuacao() {
+      const valor = getCookie("pontuacao");
+      if (valor) Premio = parseInt(valor);
+    }
+
+    // ====== Mensagem temporária ======
+    function mostrarMensagem(texto) {
+      const msg = document.getElementById("mensagem");
+      msg.textContent = texto;
+      msg.style.opacity = 1;
+      setTimeout(() => msg.style.opacity = 0, 2000);
+    }
+
+    // ====== Texto especial às 6h ======
+    function mostrarTextoEspecial(texto) {
+      const Music = new Audio("https://cdn.pixabay.com/audio/2025/10/09/audio_7df7573d2e.mp3");
+      const txt = document.getElementById("relogio");
+      const div = document.getElementById("textoEspecial");
+      div.textContent = texto;
+      txt.style.display = "none";
+      div.style.opacity = 1;
+      Music.play();
+      setTimeout(() => {
+        div.style.opacity = 0;
+        txt.style.display = "block";
+      }, 6000);
+    }
+
+    // ====== Atualiza hora e contador ======
+    function atualizarHora() {
+      const agora = new Date();
+      salvarPontuacao(); // soma e salva a cada segundo
+
+      const opcoes = {
+        timeZone: "America/Sao_Paulo",
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      };
+
+      const horaBrasilia = new Intl.DateTimeFormat("pt-BR", opcoes).format(agora);
+      document.getElementById("relogio").textContent = horaBrasilia;
+
+      const [hora, minuto, segundo] = horaBrasilia.split(":").map(Number);
+      if (hora === 6 && minuto === 0 && segundo === 0 && !mensagemMostrada) {
+        mostrarTextoEspecial("CHEGOU O DIA");
+        mensagemMostrada = true;
+        setTimeout(() => (mensagemMostrada = false), 60000);
+      }
+
+      setTimeout(atualizarHora, 1000);
+    }
+
+    // ====== Mostrar pontos com tecla B ======
+    document.addEventListener("keydown", (e) => {
+      if (e.key.toLowerCase() === "b") {
+        mostrarMensagem("Seus pontos: " + Premio);
+      }
+    });
+
+    // ====== Início ======
+    carregarPontuacao();
+    atualizarHora();
+  </script>
+</body>
+</html>
