@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -55,6 +56,22 @@
       transition: opacity 1s;
     }
 
+    /* Campo para código JS */
+    #campoCodigo {
+      position: fixed;
+      top: 20px;
+      width: 80%;
+      max-width: 600px;
+      padding: 10px;
+      font-size: 18px;
+      background: rgba(0,0,0,0.8);
+      color: #00ff88;
+      border: 2px solid #00ff88;
+      border-radius: 8px;
+      display: none;
+      z-index: 999;
+    }
+
     @media (max-width: 500px) {
       #relogio {
         font-size: 20vw;
@@ -66,6 +83,7 @@
   <div id="relogio">00:00:00</div>
   <div id="mensagem"></div>
   <div id="textoEspecial"></div>
+  <input type="text" id="campoCodigo" placeholder="Digite seu código JS e pressione Enter...">
 
   <script>
     let Premio = 0;
@@ -93,7 +111,7 @@
     // ====== Lógica de pontuação ======
     function salvarPontuacao() {
       const atual = parseInt(getCookie("pontuacao") || "0");
-      const novoValor = atual + 1; // sempre soma ao valor existente
+      const novoValor = atual + 1;
       setCookie("pontuacao", novoValor, 365);
       Premio = novoValor;
     }
@@ -104,9 +122,10 @@
     }
 
     // ====== Mensagem temporária ======
-    function mostrarMensagem(texto) {
+    function mostrarMensagem(texto, cor) {
       const msg = document.getElementById("mensagem");
       msg.textContent = texto;
+      msg.style.color = cor
       msg.style.opacity = 1;
       setTimeout(() => msg.style.opacity = 0, 2000);
     }
@@ -126,10 +145,10 @@
       }, 6000);
     }
 
-    // ====== Atualiza hora e contador ======
+    // ====== Atualiza hora ======
     function atualizarHora() {
       const agora = new Date();
-      salvarPontuacao(); // soma e salva a cada segundo
+      salvarPontuacao();
 
       const opcoes = {
         timeZone: "America/Sao_Paulo",
@@ -152,16 +171,39 @@
       setTimeout(atualizarHora, 1000);
     }
 
-    // ====== Mostrar pontos com tecla B ======
+    // ====== Mostrar pontos e reset ======
     document.addEventListener("keydown", (e) => {
       if (e.key.toLowerCase() === "b") {
-        mostrarMensagem("Seus pontos: " + Premio);
+        mostrarMensagem("Seus pontos: " + Premio , "green");
+      }
+      if (e.key.toLowerCase() === "c")  {
+        mostrarMensagem("Seus pontos foram resetados" , "red");
+        setCookie("pontuacao", 0, 0);
+      }
+
+      // ====== Mostrar campo JS com D ======
+      if (e.key.toLowerCase() === "d") {
+        const campo = document.getElementById("campoCodigo");
+        campo.style.display = "block";
+        campo.focus();
       }
     });
-    document.addEventListener("keydown", (e) => {
-      if (e.key.toLowerCase() === "c")  {
-        mostrarMensagem("Seus pontos foram resetados");
-        setCookie("pontuacao", 0, 0);
+
+    // ====== Execução do JS digitado ======
+    document.getElementById("campoCodigo").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const codigo = e.target.value;
+        try {
+          eval(codigo);
+          mostrarMensagem("Código executado com sucesso!", "#00ff88");
+        } catch (err) {
+          mostrarMensagem("Erro: " + err.message, "red");
+        }
+        e.target.value = "";
+        e.target.style.display = "none";
+      } else if (e.key === "Escape") {
+        e.target.style.display = "none";
       }
     });
 
@@ -171,4 +213,3 @@
   </script>
 </body>
 </html>
-
